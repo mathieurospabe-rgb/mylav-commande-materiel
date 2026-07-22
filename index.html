@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commande de matériel — MYLAV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@600;800&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bleu:#1478C0;
+  --bleu-fonce:#0E4C7A;
+  --rouge:#BB3B3C;
+  --ligne:#D3E2F0;
+  --fond-ligne:#F2F7FC;
+  --texte:#1B2733;
+  --gris:#5C6B7A;
+  --blanc:#fff;
+  --rayon:6px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  font-family:"Source Sans 3",system-ui,sans-serif;
+  color:var(--texte);
+  background:var(--blanc);
+  font-size:16px;
+  line-height:1.5;
+  padding-bottom:92px;
+}
+.wrap{max-width:860px;margin:0 auto;padding:0 18px}
+
+/* ---------- en-tête ---------- */
+header{background:var(--bleu);color:var(--blanc);padding:26px 0 22px}
+.marque{font-family:Raleway,sans-serif;font-weight:800;font-size:26px;letter-spacing:.16em}
+.marque span{color:#BFDCF2}
+header h1{font-family:Raleway,sans-serif;font-weight:600;font-size:1.45rem;margin:12px 0 4px}
+header p{margin:0;color:#D6E9F8;font-size:.95rem}
+
+/* ---------- sections ---------- */
+section{margin-top:34px}
+h2{
+  font-family:Raleway,sans-serif;font-weight:600;font-size:1.12rem;
+  color:var(--bleu-fonce);margin:0 0 4px;
+}
+.aide{margin:0 0 16px;color:var(--gris);font-size:.92rem}
+
+/* ---------- champs ---------- */
+.champs{display:grid;gap:14px;grid-template-columns:repeat(2,1fr)}
+.champ{display:flex;flex-direction:column;gap:5px}
+.champ.large{grid-column:1/-1}
+label{font-size:.86rem;font-weight:600;color:var(--bleu-fonce)}
+input,textarea{
+  font:inherit;color:inherit;padding:10px 12px;
+  border:1px solid var(--ligne);border-radius:var(--rayon);background:var(--blanc);
+  width:100%;
+}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus,button:focus-visible{
+  outline:2px solid var(--bleu);outline-offset:1px;border-color:var(--bleu);
+}
+.oblig{color:var(--rouge)}
+.pot{position:absolute;left:-9999px}
+
+/* ---------- recherche clinique ---------- */
+.recherche{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.recherche .champ{flex:0 0 150px}
+.btn-sec{
+  font:inherit;font-weight:600;padding:10px 16px;cursor:pointer;
+  background:var(--blanc);color:var(--bleu);border:1px solid var(--bleu);border-radius:var(--rayon);
+}
+.btn-sec:hover{background:var(--fond-ligne)}
+.resultats{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:8px}
+.resultats li button{
+  width:100%;text-align:left;font:inherit;cursor:pointer;padding:11px 13px;
+  background:var(--fond-ligne);border:1px solid var(--ligne);border-radius:var(--rayon);
+}
+.resultats li button:hover{border-color:var(--bleu)}
+.resultats strong{display:block;color:var(--bleu-fonce)}
+.resultats small{color:var(--gris)}
+.statut{margin:12px 0 0;font-size:.92rem;color:var(--gris)}
+.rattachee{
+  margin:14px 0 0;padding:11px 13px;border-left:3px solid var(--bleu);
+  background:var(--fond-ligne);font-size:.94rem;
+}
+.rattachee button{
+  font:inherit;background:none;border:0;color:var(--bleu);text-decoration:underline;
+  cursor:pointer;padding:0;margin-left:6px;
+}
+
+/* ---------- catalogue ---------- */
+.famille{margin-top:26px}
+.famille h3{
+  font-family:Raleway,sans-serif;font-weight:600;font-size:.82rem;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--blanc);background:var(--bleu-fonce);
+  margin:0;padding:8px 13px;border-radius:var(--rayon) var(--rayon) 0 0;
+}
+.article{
+  display:flex;align-items:center;gap:14px;padding:11px 13px;
+  border:1px solid var(--ligne);border-top:0;
+}
+.famille .article:last-child{border-radius:0 0 var(--rayon) var(--rayon)}
+.article:nth-child(odd){background:var(--fond-ligne)}
+.article.actif{background:#E4F0FA;border-color:#A9CDE9}
+.desc{flex:1;min-width:0}
+.desc .nom{font-weight:600;display:block}
+.desc .meta{font-size:.84rem;color:var(--gris)}
+.desc .offert{color:var(--bleu);font-weight:700}
+.desc .charge{color:var(--rouge);font-weight:700}
+.desc .valeur{opacity:.75}
+.tag{
+  display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;
+  color:var(--rouge);border:1px solid var(--rouge);border-radius:3px;
+  padding:0 5px;margin-left:7px;vertical-align:1px;
+}
+.compteur{display:flex;align-items:center;gap:0;flex:0 0 auto}
+.compteur button{
+  width:38px;height:38px;font-size:1.25rem;line-height:1;cursor:pointer;
+  background:var(--blanc);border:1px solid var(--ligne);color:var(--bleu-fonce);
+}
+.compteur button:first-child{border-radius:var(--rayon) 0 0 var(--rayon)}
+.compteur button:last-child{border-radius:0 var(--rayon) var(--rayon) 0}
+.compteur button:hover:not(:disabled){background:var(--fond-ligne);border-color:var(--bleu)}
+.compteur button:disabled{opacity:.35;cursor:default}
+.compteur input{
+  width:52px;height:38px;text-align:center;border-radius:0;border-left:0;border-right:0;
+  font-variant-numeric:tabular-nums;font-weight:600;padding:0;
+}
+.compteur input::-webkit-outer-spin-button,
+.compteur input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.compteur input[type=number]{-moz-appearance:textfield}
+
+/* ---------- barre de synthèse ---------- */
+.barre{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  background:var(--blanc);border-top:1px solid var(--ligne);
+  box-shadow:0 -3px 14px rgba(14,76,122,.11);
+}
+.barre .wrap{display:flex;align-items:center;gap:16px;padding-top:12px;padding-bottom:12px}
+.recap{flex:1;min-width:0;font-size:.92rem;line-height:1.35}
+.recap .chiffres{font-weight:700;color:var(--bleu-fonce);font-variant-numeric:tabular-nums}
+.recap .destinataire{color:var(--gris);display:block}
+.recap .destinataire b{color:var(--rouge);font-weight:600}
+.btn{
+  font:inherit;font-weight:700;padding:13px 24px;cursor:pointer;white-space:nowrap;
+  background:var(--bleu);color:var(--blanc);border:0;border-radius:var(--rayon);
+}
+.btn:hover:not(:disabled){background:var(--bleu-fonce)}
+.btn:disabled{background:#A8C4DA;cursor:not-allowed}
+
+/* ---------- confirmation / erreur ---------- */
+.message{padding:18px;border-radius:var(--rayon);margin-top:22px;font-size:.95rem}
+.message.erreur{background:#FBEDED;border-left:3px solid var(--rouge)}
+.confirmation{padding:52px 0 70px;max-width:640px}
+.confirmation h2{font-size:1.6rem;margin-bottom:6px}
+.confirmation .num{
+  font-family:Raleway,sans-serif;font-weight:800;font-size:1.9rem;color:var(--bleu);margin:6px 0 22px;
+}
+.marche{
+  counter-reset:etape;list-style:none;margin:0 0 26px;padding:0;
+}
+.marche li{
+  counter-increment:etape;position:relative;padding:0 0 16px 42px;font-size:1.02rem;
+}
+.marche li::before{
+  content:counter(etape);position:absolute;left:0;top:-1px;
+  width:28px;height:28px;border-radius:50%;background:var(--bleu);color:var(--blanc);
+  font-weight:700;font-size:.9rem;display:flex;align-items:center;justify-content:center;
+}
+.marche .mail{
+  display:inline-block;font-weight:700;color:var(--bleu-fonce);
+  background:var(--fond-ligne);padding:2px 8px;border-radius:4px;
+}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:8px}
+.actions a.btn{text-decoration:none;display:inline-block}
+.masque{display:none}
+
+footer{margin:44px 0 0;padding:20px 0;border-top:1px solid var(--ligne);
+  color:var(--gris);font-size:.88rem;text-align:center}
+footer a{color:var(--bleu)}
+
+@media(max-width:640px){
+  .champs{grid-template-columns:1fr}
+  .article{flex-wrap:wrap;gap:9px}
+  .desc{flex:1 0 100%}
+  .compteur{margin-left:auto}
+  .barre .wrap{gap:11px}
+  .btn{padding:13px 17px}
+  .recap{font-size:.85rem}
+}
+@media(prefers-reduced-motion:no-preference){
+  .article{transition:background .15s ease,border-color .15s ease}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="marque">MYL<span>AV</span></div>
+    <h1>Commande de matériel</h1>
+    <p>Un laboratoire de praticiens pour des praticiens</p>
+  </div>
+</header>
+
+<main class="wrap" id="formulaire">
+
+  <section>
+    <h2>Votre clinique</h2>
+    <p class="aide">Saisissez votre code postal pour retrouver votre clinique et identifier votre interlocuteur MYLAV.</p>
+
+    <div class="recherche">
+      <div class="champ">
+        <label for="cp">Code postal <span class="oblig">*</span></label>
+        <input id="cp" name="cp" inputmode="numeric" autocomplete="postal-code" maxlength="5" pattern="[0-9]{5}" required>
+      </div>
+      <button type="button" class="btn-sec" id="btn-recherche">Trouver ma clinique</button>
+    </div>
+
+    <p class="statut" id="statut-recherche" role="status" aria-live="polite"></p>
+    <ul class="resultats" id="resultats"></ul>
+    <p class="rattachee masque" id="rattachee"></p>
+
+    <div class="champs" style="margin-top:18px">
+      <div class="champ large">
+        <label for="clinique">Nom de la clinique <span class="oblig">*</span></label>
+        <input id="clinique" name="clinique" autocomplete="organization" required>
+      </div>
+      <div class="champ large">
+        <label for="adresse">Adresse de livraison <span class="oblig">*</span></label>
+        <input id="adresse" name="adresse" autocomplete="street-address" required>
+      </div>
+      <div class="champ">
+        <label for="referent">Personne à contacter <span class="oblig">*</span></label>
+        <input id="referent" name="referent" autocomplete="name" required>
+      </div>
+      <div class="champ">
+        <label for="tel">Téléphone <span class="oblig">*</span></label>
+        <input id="tel" name="tel" type="tel" autocomplete="tel" required>
+      </div>
+      <div class="champ large">
+        <label for="email">Adresse email <span class="oblig">*</span></label>
+        <input id="email" name="email" type="email" autocomplete="email" required>
+      </div>
+    </div>
+    <input type="text" class="pot" id="pot" tabindex="-1" autocomplete="off" aria-hidden="true">
+  </section>
+
+  <section>
+    <h2>Votre commande</h2>
+    <p class="aide">
+      Le matériel est mis à disposition par MYLAV. Deux articles seulement restent à votre charge,
+      signalés <span class="tag">À VOTRE CHARGE</span> : le pot d'histologie de 550 ml et le kit
+      de biopsies rénales. Les pots de 60 et 150 ml sont offerts dès lors que l'analyse est
+      réalisée chez MYLAV.
+    </p>
+    <div id="catalogue"></div>
+  </section>
+
+  <section>
+    <h2>Précisions</h2>
+    <p class="aide">Une remarque sur un article, un délai, une livraison particulière.</p>
+    <div class="champ">
+      <label for="notes">Votre message</label>
+      <textarea id="notes" name="notes"></textarea>
+    </div>
+    <div id="message"></div>
+  </section>
+
+  <footer>
+    MYLAV France · 09 72 01 01 72 · <a href="mailto:info.fr@mylav.net">info.fr@mylav.net</a>
+  </footer>
+</main>
+
+<div class="confirmation masque wrap" id="confirmation"></div>
+
+<div class="barre" id="barre">
+  <div class="wrap">
+    <div class="recap">
+      <span class="chiffres" id="chiffres">0 article</span>
+      <span class="destinataire" id="destinataire">Saisissez votre code postal pour connaître votre interlocuteur</span>
+    </div>
+    <button class="btn" id="btn-envoi" type="button">Générer mon bon de commande</button>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   Configuration
+   ============================================================ */
+const API = "https://mylav-notion-proxy.mathieurospabe.workers.dev";
+
+/* Carte des territoires */
+const TERRITOIRES = [
+  {nom:"Dominique Barciet", email:"dominiquebarciet@mylav.net", tel:"06 32 28 88 68",
+   deps:[1,14,22,27,28,29,35,37,41,44,45,49,50,53,56,61,69,72,76,85]},
+  {nom:"Julien Pauleau", email:"julienpauleau@mylav.net", tel:"06 78 30 06 46",
+   deps:[2,8,10,21,25,39,51,52,54,55,57,58,59,60,62,67,68,70,71,75,77,78,80,88,89,90,91,92,93,94,95]},
+  {nom:"Kristine Kamosi", email:"kristinekamosi@mylav.net", tel:"06 80 87 24 37",
+   deps:[9,11,12,16,17,19,23,24,30,31,32,33,34,40,46,47,48,64,65,66,79,81,82,86,87]},
+  {nom:"Quentin Légier", email:"quentinlegier@mylav.net", tel:"06 70 11 98 13",
+   deps:[3,4,5,6,7,13,15,18,26,36,38,42,43,63,73,74,83,84]}
+];
+const REPLI = {nom:"Équipe MYLAV France", email:"info.fr@mylav.net", tel:"09 72 01 01 72"};
+
+/* Catalogue. "cle" = nom exact de la propriété Notion. */
+const CATALOGUE = [
+  {famille:"Expédition", articles:[
+    {cle:"Boite expedition standard",              nom:"Boîte d'expédition standard", prix:1.10},
+    {cle:"Boite expedition histologie",            nom:"Boîte d'expédition histologie", prix:1.10},
+    {cle:"Boite expedition histologie URGENT",     nom:"Boîte d'expédition histologie URGENT", prix:1.10},
+    {cle:"Boite double",                           nom:"Boîte double, deux colis", prix:1.80},
+    {cle:"Enveloppe transparente double poche",    nom:"Enveloppe transparente à double poche", prix:0.18, meta:"Prélèvements et documents"},
+    {cle:"Enveloppe thermique",                    nom:"Enveloppe thermique", prix:0.50, meta:"Envoi réfrigéré"},
+    {cle:"Pack congelateur",                       nom:"Pack congélateur 12,6 × 6 × 2 cm", prix:0.48},
+    {cle:"Flacon de protection des tubes",         nom:"Flacon de protection des tubes, bouchon à vis", prix:0.32}
+  ]},
+  {famille:"Tubes et prélèvements sanguins", articles:[
+    {cle:"Tube SEC 4 mL gel separateur", nom:"Tube SEC 4 mL, gel séparateur", prix:0.12},
+    {cle:"Tube SEC 2,5 mL",              nom:"Tube SEC 2,5 mL, double fond conique", prix:0.20},
+    {cle:"Tube SEC 10 mL",               nom:"Tube SEC 10 mL, bouchon à vis", prix:0.05, max:30, meta:"30 tubes maximum par commande"},
+    {cle:"Tube citrate 1 mL",            nom:"Tube citrate de sodium 1 mL, bouchon jaune", prix:0.06},
+    {cle:"Tube citrate 2,25 mL",         nom:"Tube citrate de sodium 2,25 mL, bouchon rose", prix:0.06},
+    {cle:"Tube EDTA 1 mL",               nom:"Tube EDTA 1 mL", prix:0.10},
+    {cle:"Tube EDTA 1,5 mL",             nom:"Tube EDTA 1,5 mL, bouchon perçable", prix:0.12},
+    {cle:"Tube EDTA 3 mL",               nom:"Tube EDTA 3 mL, bouchon perçable", prix:0.12},
+    {cle:"eSwab culture urinaire",       nom:"eSwab écouvillon pour culture urinaire", prix:1.30},
+    {cle:"Tube aprotinine ACTH",         nom:"Tube aprotinine (ACTH)", prix:0.60}
+  ]},
+  {famille:"Histologie et cytologie", articles:[
+    {cle:"Pot histologie 60 mL",           nom:"Pot histologie Safe System 60 mL", prix:2.50, meta:"10 mL de formol · déduit si histologie réalisée chez MYLAV"},
+    {cle:"Pot histologie 150 mL",          nom:"Pot histologie Safe System 150 mL", prix:2.50, meta:"60 mL de formol · déduit si histologie réalisée chez MYLAV"},
+    {cle:"Pot histologie 550 mL",          nom:"Pot histologie Safe System 550 mL", prix:9.00, meta:"230 mL de formol", facture:true},
+    {cle:"Lames porte-objets boite de 50", nom:"Lames porte-objets, boîte de 50", prix:2.52, meta:"Bord non poli"},
+    {cle:"Boite transport 2 lames",        nom:"Boîte de transport pour 2 lames", prix:0.28},
+    {cle:"Cytobrush",                      nom:"Cytobrush stérile", prix:0.32},
+    {cle:"Cassette a biopsie x20",         nom:"Cassettes à biopsie avec mousses, lot de 20", prix:5.00},
+    {cle:"Kit biopsies renales",           nom:"Kit biopsies rénales", prix:60.00, meta:"Formol tamponné 10 %, solution de Michel, glutaraldéhyde", facture:true}
+  ]},
+  {famille:"Microbiologie", articles:[
+    {cle:"Ecouvillon sec PCR",                        nom:"Écouvillon stérile sec pour PCR", prix:0.14},
+    {cle:"Ecouvillon milieu de transport aero-anaero", nom:"Écouvillon avec milieu de transport", prix:0.32, meta:"Bactéries aérobies et anaérobies"},
+    {cle:"Ecouvillon microbiote intestinal",          nom:"Écouvillon bilan microbiote intestinal", prix:3.00},
+    {cle:"Flacon mycoplasmes urogenitaux",            nom:"Flacon mycoplasmes urogénitaux", prix:15.00},
+    {cle:"Ecouvillon microbiologie environnementale", nom:"Écouvillon microbiologie environnementale", prix:2.50},
+    {cle:"Flacon pour selles",                        nom:"Flacon pour selles, bouchon à vis", prix:0.22},
+    {cle:"Hemoculture 1 flacon",                      nom:"Hémoculture OXOID SIGNAL, 1 flacon", prix:12.00},
+    {cle:"Hemoculture 2 flacons",                     nom:"Hémoculture OXOID SIGNAL, 2 flacons", prix:21.00},
+    {cle:"Hemoculture 3 flacons",                     nom:"Hémoculture OXOID SIGNAL, 3 flacons", prix:30.00}
+  ]}
+];
+
+const ARTICLES = CATALOGUE.flatMap(f => f.articles);
+const quantites = {};
+let cliniqueId = null;
+let derniereCommande = null;
+
+/* ============================================================
+   Catalogue
+   ============================================================ */
+const euro = n => n.toLocaleString("fr-FR",{minimumFractionDigits:2,maximumFractionDigits:2}) + " €";
+
+function construireCatalogue(){
+  const hote = document.getElementById("catalogue");
+  CATALOGUE.forEach(fam => {
+    const bloc = document.createElement("div");
+    bloc.className = "famille";
+    bloc.innerHTML = `<h3>${fam.famille}</h3>`;
+    fam.articles.forEach(a => {
+      quantites[a.cle] = 0;
+      const ligne = document.createElement("div");
+      ligne.className = "article";
+      ligne.dataset.cle = a.cle;
+      ligne.innerHTML = `
+        <div class="desc">
+          <span class="nom">${a.nom}${a.facture ? '<span class="tag">À VOTRE CHARGE</span>' : ''}</span>
+          <span class="meta">${a.facture
+            ? `<b class="charge">${euro(a.prix)} l'unité</b>`
+            : `<b class="offert">Offert</b> <span class="valeur">valeur ${euro(a.prix)}</span>`
+          }${a.meta ? " · " + a.meta : ""}</span>
+        </div>
+        <div class="compteur">
+          <button type="button" data-pas="-1" aria-label="Retirer un ${a.nom}" disabled>&minus;</button>
+          <input type="number" min="0" max="${a.max || 999}" step="1" value="0"
+                 inputmode="numeric" aria-label="Quantité, ${a.nom}">
+          <button type="button" data-pas="1" aria-label="Ajouter un ${a.nom}">+</button>
+        </div>`;
+      bloc.appendChild(ligne);
+    });
+    hote.appendChild(bloc);
+  });
+
+  hote.addEventListener("click", e => {
+    const bouton = e.target.closest("button[data-pas]");
+    if(!bouton) return;
+    const ligne = bouton.closest(".article");
+    const champ = ligne.querySelector("input");
+    champ.value = Number(champ.value) + Number(bouton.dataset.pas);
+    majLigne(ligne);
+  });
+
+  hote.addEventListener("input", e => {
+    if(e.target.matches("input[type=number]")) majLigne(e.target.closest(".article"));
+  });
+}
+
+function majLigne(ligne){
+  const champ = ligne.querySelector("input");
+  const max = Number(champ.max);
+  let v = Math.floor(Number(champ.value) || 0);
+  v = Math.min(max, Math.max(0, v));
+  champ.value = v;
+  quantites[ligne.dataset.cle] = v;
+  ligne.classList.toggle("actif", v > 0);
+  ligne.querySelector('button[data-pas="-1"]').disabled = v === 0;
+  ligne.querySelector('button[data-pas="1"]').disabled = v >= max;
+  majSynthese();
+}
+
+function totaux(){
+  let articles = 0, valeur = 0, facture = 0;
+  ARTICLES.forEach(a => {
+    const q = quantites[a.cle] || 0;
+    articles += q;
+    valeur += q * a.prix;
+    if(a.facture) facture += q * a.prix;
+  });
+  valeur = Math.round(valeur*100)/100;
+  facture = Math.round(facture*100)/100;
+  return {articles, valeur, facture, offert:Math.round((valeur-facture)*100)/100};
+}
+
+function majSynthese(){
+  const t = totaux();
+  const cible = document.getElementById("chiffres");
+  if(t.articles === 0){ cible.textContent = "0 article"; return; }
+  cible.innerHTML = `${t.articles} article${t.articles>1?"s":""} · ` +
+    (t.facture > 0
+      ? `<b>${euro(t.facture)}</b> à votre charge`
+      : "pris en charge par MYLAV");
+}
+
+/* ============================================================
+   Territoire
+   ============================================================ */
+function commercialPour(cp){
+  const dep = Math.floor(Number(cp)/1000);
+  return TERRITOIRES.find(t => t.deps.includes(dep)) || REPLI;
+}
+
+function majDestinataire(){
+  const cp = document.getElementById("cp").value.trim();
+  const cible = document.getElementById("destinataire");
+  if(!/^\d{5}$/.test(cp)){
+    cible.textContent = "Saisissez votre code postal pour connaître votre interlocuteur";
+    return;
+  }
+  cible.innerHTML = `Bon de commande à adresser à <b>${commercialPour(cp).nom}</b>`;
+}
+
+/* ============================================================
+   Recherche de la clinique
+   ============================================================ */
+async function chercherClinique(){
+  const cp = document.getElementById("cp").value.trim();
+  const statut = document.getElementById("statut-recherche");
+  const liste = document.getElementById("resultats");
+  liste.innerHTML = "";
+  if(!/^\d{5}$/.test(cp)){ statut.textContent = "Le code postal doit comporter cinq chiffres."; return; }
+
+  statut.textContent = "Recherche en cours…";
+  try{
+    const r = await fetch(`${API}/cliniques?cp=${cp}`);
+    if(!r.ok) throw new Error(r.status);
+    const {cliniques = []} = await r.json();
+    if(cliniques.length === 0){
+      statut.textContent = "Aucune clinique enregistrée sur ce code postal. Saisissez son nom ci-dessous.";
+      return;
+    }
+    statut.textContent = `${cliniques.length} clinique${cliniques.length>1?"s":""} sur ce code postal. Sélectionnez la vôtre.`;
+    cliniques.forEach(c => {
+      const li = document.createElement("li");
+      const b = document.createElement("button");
+      b.type = "button";
+      b.innerHTML = `<strong>${c.nom}</strong><small>${c.adresse || c.ville || ""}</small>`;
+      b.addEventListener("click", () => selectionner(c));
+      li.appendChild(b);
+      liste.appendChild(li);
+    });
+  }catch(err){
+    statut.textContent = "La recherche est momentanément indisponible. Saisissez le nom de votre clinique ci-dessous.";
+  }
+}
+
+function selectionner(c){
+  cliniqueId = c.id;
+  document.getElementById("clinique").value = c.nom;
+  if(c.adresse) document.getElementById("adresse").value = c.adresse;
+  document.getElementById("resultats").innerHTML = "";
+  document.getElementById("statut-recherche").textContent = "";
+  const bloc = document.getElementById("rattachee");
+  bloc.classList.remove("masque");
+  bloc.innerHTML = `Commande rattachée à <strong>${c.nom}</strong>.<button type="button" id="detacher">Ce n'est pas ma clinique</button>`;
+  document.getElementById("detacher").addEventListener("click", () => {
+    cliniqueId = null;
+    bloc.classList.add("masque");
+    bloc.innerHTML = "";
+  });
+}
+
+/* ============================================================
+   Bon de commande PDF
+   ============================================================ */
+function construirePDF(d){
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:"mm", format:"a4"});
+  const G = 18, D = 192;
+  const BLEU = [20,120,192], FONCE = [14,76,122], ROUGE = [187,59,60], GRIS = [92,107,122];
+  let y;
+
+  const bandeau = () => {
+    doc.setFillColor(...BLEU);
+    doc.rect(0, 0, 210, 24, "F");
+    doc.setTextColor(255);
+    doc.setFont("helvetica","bold").setFontSize(17);
+    doc.text("MYLAV", G, 15);
+    doc.setFont("helvetica","normal").setFontSize(11);
+    doc.text("Bon de commande de matériel", D, 15, {align:"right"});
+    doc.setTextColor(0);
+  };
+
+  const titre = (texte, hauteur) => {
+    doc.setFillColor(...FONCE);
+    doc.rect(G, hauteur, D - G, 7, "F");
+    doc.setTextColor(255).setFont("helvetica","bold").setFontSize(9);
+    doc.text(texte.toUpperCase(), G + 3, hauteur + 4.8);
+    doc.setTextColor(0);
+  };
+
+  bandeau();
+  y = 33;
+
+  /* référence */
+  doc.setFont("helvetica","bold").setFontSize(13).setTextColor(...FONCE);
+  doc.text(d.numero || "Commande de matériel", G, y);
+  doc.setFont("helvetica","normal").setFontSize(10).setTextColor(...GRIS);
+  doc.text(d.date, D, y, {align:"right"});
+  doc.setTextColor(0);
+  y += 9;
+
+  /* destinataire — l'information la plus utile du document */
+  doc.setDrawColor(...ROUGE).setLineWidth(0.5);
+  doc.setFillColor(251,237,237);
+  doc.rect(G, y, D - G, 21, "FD");
+  doc.setFont("helvetica","bold").setFontSize(8.5).setTextColor(...ROUGE);
+  doc.text("À ADRESSER PAR EMAIL À", G + 4, y + 6);
+  doc.setFontSize(12).setTextColor(0);
+  doc.text(d.commercial.nom, G + 4, y + 13);
+  doc.setFont("helvetica","normal").setFontSize(11).setTextColor(...BLEU);
+  doc.text(d.commercial.email, G + 4, y + 18.5);
+  doc.setTextColor(...GRIS).setFontSize(10);
+  doc.text(d.commercial.tel, D - 4, y + 18.5, {align:"right"});
+  doc.setTextColor(0);
+  y += 30;
+
+  /* clinique */
+  titre("Clinique", y);
+  y += 12;
+  doc.setFontSize(10);
+  const lignesInfo = [
+    ["Clinique", d.clinique],
+    ["Adresse de livraison", `${d.adresse} — ${d.codePostal}`],
+    ["Personne à contacter", d.referent],
+    ["Téléphone", d.telephone],
+    ["Email", d.email]
+  ];
+  lignesInfo.forEach(([etiquette, valeur]) => {
+    doc.setFont("helvetica","normal").setTextColor(...GRIS);
+    doc.text(etiquette, G, y);
+    doc.setFont("helvetica","bold").setTextColor(0);
+    doc.text(doc.splitTextToSize(String(valeur), 110), G + 48, y);
+    y += 6;
+  });
+  y += 5;
+
+  /* articles */
+  const enteteTableau = () => {
+    doc.setFillColor(...FONCE);
+    doc.rect(G, y, D - G, 7, "F");
+    doc.setTextColor(255).setFont("helvetica","bold").setFontSize(8.5);
+    doc.text("ARTICLE", G + 3, y + 4.8);
+    doc.text("QTÉ", 126, y + 4.8, {align:"center"});
+    doc.text("VALEUR UNIT.", 162, y + 4.8, {align:"right"});
+    doc.text("VALEUR", D - 3, y + 4.8, {align:"right"});
+    doc.setTextColor(0);
+    y += 7;
+  };
+  enteteTableau();
+
+  doc.setFontSize(9.5);
+  d.lignes.forEach((l, i) => {
+    const nom = doc.splitTextToSize(l.nom, 100);
+    const hauteur = Math.max(7, nom.length * 4.6 + 2.6) + (l.facture ? 3.6 : 0);
+    if(y + hauteur > 262){
+      doc.addPage();
+      bandeau();
+      y = 33;
+      enteteTableau();
+      doc.setFontSize(9.5);
+    }
+    if(i % 2 === 0){
+      doc.setFillColor(242,247,252);
+      doc.rect(G, y, D - G, hauteur, "F");
+    }
+    doc.setFont("helvetica","normal").setTextColor(0);
+    doc.text(nom, G + 3, y + 4.8);
+    if(l.facture){
+      doc.setFont("helvetica","bold").setFontSize(7).setTextColor(...ROUGE);
+      doc.text("À VOTRE CHARGE", G + 3, y + 4.8 + nom.length * 4.6 - 0.6);
+      doc.setFontSize(9.5);
+    }
+    doc.setFont("helvetica","bold").setTextColor(0);
+    doc.text(String(l.quantite), 126, y + 4.8, {align:"center"});
+    doc.setFont("helvetica","normal").setTextColor(...GRIS);
+    doc.text(euro(l.prix), 162, y + 4.8, {align:"right"});
+    doc.setFont("helvetica","bold").setTextColor(...(l.facture ? ROUGE : [0,0,0]));
+    doc.text(euro(l.quantite * l.prix), D - 3, y + 4.8, {align:"right"});
+    doc.setTextColor(0);
+    y += hauteur;
+  });
+
+  /* totaux : deux montants qui ne doivent jamais se confondre */
+  doc.setDrawColor(...FONCE).setLineWidth(0.4);
+  doc.line(G, y, D, y);
+  y += 6.5;
+
+  doc.setFont("helvetica","normal").setFontSize(10).setTextColor(...GRIS);
+  doc.text(`${d.totaux.articles} article${d.totaux.articles > 1 ? "s" : ""}`, G + 3, y);
+  doc.text("Matériel pris en charge par MYLAV", 152, y, {align:"right"});
+  doc.setFont("helvetica","bold").setTextColor(0);
+  doc.text(euro(d.totaux.offert), D - 3, y, {align:"right"});
+  y += 4.5;
+
+  const charge = d.totaux.facture;
+  doc.setFillColor(...(charge > 0 ? [251,237,237] : [242,247,252]));
+  doc.rect(G, y, D - G, 13, "F");
+  doc.setFont("helvetica","bold").setFontSize(11.5).setTextColor(...(charge > 0 ? ROUGE : FONCE));
+  doc.text("À votre charge", G + 3, y + 8.4);
+  doc.text(euro(charge), D - 3, y + 8.4, {align:"right"});
+  doc.setTextColor(0);
+  y += 17;
+
+  if(charge === 0){
+    doc.setFont("helvetica","normal").setFontSize(9.5).setTextColor(...GRIS);
+    doc.text("Cette commande est intégralement prise en charge par MYLAV.", G + 3, y);
+    doc.setTextColor(0);
+    y += 6;
+  }
+
+  /* précisions */
+  if(d.notes){
+    y += 5;
+    titre("Précisions", y);
+    y += 11;
+    doc.setFont("helvetica","normal").setFontSize(9.5);
+    const texte = doc.splitTextToSize(d.notes, D - G - 6);
+    doc.text(texte, G + 3, y);
+    y += texte.length * 4.6;
+  }
+
+  /* mention et pied de page */
+  y += 8;
+  doc.setFont("helvetica","italic").setFontSize(8.5).setTextColor(...GRIS);
+  doc.text(doc.splitTextToSize(
+    "Le matériel de prélèvement et d'expédition est mis à disposition par MYLAV. Seuls le pot " +
+    "d'histologie de 550 ml (9,00 €) et le kit de biopsies rénales (60,00 €) sont facturés. " +
+    "Les pots de 60 et 150 ml sont offerts dès lors que l'analyse est réalisée chez MYLAV. " +
+    "Les valeurs indiquées sont celles du matériel, elles ne constituent pas un montant dû.",
+    D - G), G, y);
+
+  const pages = doc.getNumberOfPages();
+  for(let p = 1; p <= pages; p++){
+    doc.setPage(p);
+    doc.setFont("helvetica","normal").setFontSize(8).setTextColor(...GRIS);
+    doc.text("MYLAV France · 09 72 01 01 72 · info.fr@mylav.net", G, 287);
+    doc.text(`${p} / ${pages}`, D, 287, {align:"right"});
+  }
+  return doc;
+}
+
+function nomFichier(d){
+  const clinique = d.clinique.normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40);
+  return `Commande-MYLAV-${clinique}-${d.date.split("/").reverse().join("")}.pdf`;
+}
+
+/* ============================================================
+   Génération
+   ============================================================ */
+function afficherErreur(texte){
+  document.getElementById("message").innerHTML = `<p class="message erreur">${texte}</p>`;
+}
+
+async function genererCommande(){
+  const bouton = document.getElementById("btn-envoi");
+  document.getElementById("message").innerHTML = "";
+
+  const obligatoires = ["cp","clinique","adresse","referent","tel","email"];
+  for(const id of obligatoires){
+    const champ = document.getElementById(id);
+    if(!champ.value.trim() || !champ.checkValidity()){
+      champ.focus();
+      afficherErreur("Complétez les champs signalés d'un astérisque avant de générer le bon de commande.");
+      return;
+    }
+  }
+  const t = totaux();
+  if(t.articles === 0){
+    afficherErreur("Indiquez au moins un article avant de générer le bon de commande.");
+    return;
+  }
+
+  const cp = document.getElementById("cp").value.trim();
+  const donnees = {
+    numero: "",
+    date: new Date().toLocaleDateString("fr-FR"),
+    commercial: commercialPour(cp),
+    clinique: document.getElementById("clinique").value.trim(),
+    cliniqueId,
+    codePostal: Number(cp),
+    adresse: document.getElementById("adresse").value.trim(),
+    referent: document.getElementById("referent").value.trim(),
+    telephone: document.getElementById("tel").value.trim(),
+    email: document.getElementById("email").value.trim(),
+    notes: document.getElementById("notes").value.trim(),
+    lignes: ARTICLES.filter(a => quantites[a.cle] > 0)
+                    .map(a => ({cle:a.cle, nom:a.nom, quantite:quantites[a.cle],
+                                prix:a.prix, facture:!!a.facture})),
+    totaux: t
+  };
+
+  bouton.disabled = true;
+  bouton.textContent = "Génération…";
+
+  /* L'enregistrement Notion ne doit jamais empêcher la clinique d'obtenir son PDF. */
+  try{
+    const r = await fetch(`${API}/commande`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({...donnees, pot:document.getElementById("pot").value})
+    });
+    if(r.ok){
+      const data = await r.json();
+      if(data.numero) donnees.numero = data.numero;
+    }
+  }catch(err){ /* hors ligne : on génère quand même */ }
+
+  derniereCommande = donnees;
+  construirePDF(donnees).save(nomFichier(donnees));
+  confirmer(donnees);
+}
+
+function lienEmail(d){
+  const objet = `Commande de matériel${d.numero ? " " + d.numero : ""} — ${d.clinique} (${d.codePostal})`;
+  const corps =
+`Bonjour,
+
+Vous trouverez ci-joint notre bon de commande de matériel${d.numero ? " " + d.numero : ""}.
+
+${d.clinique}
+${d.referent} — ${d.telephone}
+
+(pensez à joindre le PDF téléchargé)`;
+  return `mailto:${d.commercial.email}?subject=${encodeURIComponent(objet)}&body=${encodeURIComponent(corps)}`;
+}
+
+function confirmer(d){
+  document.getElementById("formulaire").classList.add("masque");
+  document.getElementById("barre").classList.add("masque");
+  document.body.style.paddingBottom = "0";
+  const bloc = document.getElementById("confirmation");
+  bloc.classList.remove("masque");
+  bloc.innerHTML = `
+    <h2>Bon de commande téléchargé</h2>
+    <p class="num">${d.numero || d.clinique}</p>
+    <ol class="marche">
+      <li>Le fichier <strong>${nomFichier(d)}</strong> se trouve dans vos téléchargements.</li>
+      <li>Envoyez-le à ${d.commercial.nom} : <span class="mail">${d.commercial.email}</span></li>
+      <li>Votre commande est préparée dès réception.</li>
+    </ol>
+    <div class="actions">
+      <a class="btn" href="${lienEmail(d)}">Ouvrir un email pré-rempli</a>
+      <button class="btn-sec" type="button" id="retelecharger">Télécharger à nouveau</button>
+    </div>
+    <p style="color:var(--gris);font-size:.92rem;margin-top:26px">
+      Une question sur cette commande : ${d.commercial.tel} ·
+      <a href="mailto:info.fr@mylav.net">info.fr@mylav.net</a>
+    </p>`;
+  document.getElementById("retelecharger").addEventListener("click", () => {
+    construirePDF(derniereCommande).save(nomFichier(derniereCommande));
+  });
+  window.scrollTo({top:0});
+}
+
+/* ============================================================
+   Démarrage
+   ============================================================ */
+construireCatalogue();
+document.getElementById("btn-recherche").addEventListener("click", chercherClinique);
+document.getElementById("btn-envoi").addEventListener("click", genererCommande);
+document.getElementById("cp").addEventListener("input", majDestinataire);
+document.getElementById("cp").addEventListener("keydown", e => {
+  if(e.key === "Enter"){ e.preventDefault(); chercherClinique(); }
+});
+</script>
+</body>
+</html>
