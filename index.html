@@ -155,6 +155,20 @@ input:focus,textarea:focus,button:focus-visible{
 /* ---------- confirmation / erreur ---------- */
 .message{padding:18px;border-radius:var(--rayon);margin-top:22px;font-size:.95rem}
 .message.erreur{background:#FBEDED;border-left:3px solid var(--rouge)}
+.encart-rouge{
+  background:#FBEDED;border:1px solid var(--rouge);border-left:5px solid var(--rouge);
+  border-radius:var(--rayon);padding:16px 18px;margin:22px 0;
+  color:var(--texte);font-size:.98rem;line-height:1.5;
+}
+.encart-rouge .titre{
+  display:block;font-family:Raleway,sans-serif;font-weight:800;color:var(--rouge);
+  font-size:1.05rem;margin-bottom:5px;
+}
+.encart-rouge strong{color:var(--rouge)}
+.encart-rouge .mail{
+  display:inline-block;font-weight:700;color:var(--rouge);
+  background:var(--blanc);padding:2px 8px;border-radius:4px;border:1px solid var(--rouge);
+}
 .confirmation{padding:52px 0 70px;max-width:640px}
 .confirmation h2{font-size:1.6rem;margin-bottom:6px}
 .confirmation .num{
@@ -271,6 +285,13 @@ footer a{color:var(--bleu)}
     </div>
     <div id="message"></div>
   </section>
+
+  <div class="encart-rouge">
+    <span class="titre">L'envoi n'est pas automatique</span>
+    Une fois généré, le bon de commande se télécharge sur votre appareil. Pour qu'il soit
+    traité, <strong>envoyez-le vous-même par email à votre commercial MYLAV</strong>, dont
+    l'adresse figure sur le document. Sans cet envoi, votre commande ne nous parvient pas.
+  </div>
 
   <footer>
     MYLAV France · 09 72 01 01 72 · <a href="mailto:info.fr@mylav.net">info.fr@mylav.net</a>
@@ -791,6 +812,12 @@ function confirmer(d){
   bloc.innerHTML = `
     <h2>Bon de commande téléchargé</h2>
     <p class="num">${d.numero || d.clinique}</p>
+    <div class="encart-rouge">
+      <span class="titre">Dernière étape indispensable</span>
+      Le téléchargement ne transmet rien à MYLAV. <strong>Envoyez le PDF par email à
+      ${d.commercial.nom}</strong> — <span class="mail">${d.commercial.email}</span> —
+      sans quoi votre commande ne sera pas préparée.
+    </div>
     <ol class="marche">
       <li>Le fichier <strong>${nomFichier(d)}</strong> se trouve dans vos téléchargements.</li>
       <li>Envoyez-le à ${d.commercial.nom} : <span class="mail">${d.commercial.email}</span></li>
