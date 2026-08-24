@@ -13,6 +13,8 @@
   --bleu:#1478C0;
   --bleu-fonce:#0E4C7A;
   --rouge:#BB3B3C;
+  --ambre:#C77A28;
+  --fond-ambre:#FBF1E4;
   --ligne:#D3E2F0;
   --fond-ligne:#F2F7FC;
   --texte:#1B2733;
@@ -111,12 +113,14 @@ input:focus,textarea:focus,button:focus-visible{
 .desc .meta{font-size:.84rem;color:var(--gris)}
 .desc .offert{color:var(--bleu);font-weight:700}
 .desc .charge{color:var(--rouge);font-weight:700}
+.desc .rembourse{color:var(--ambre);font-weight:700}
 .desc .valeur{opacity:.75}
 .tag{
   display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;
   color:var(--rouge);border:1px solid var(--rouge);border-radius:3px;
   padding:0 5px;margin-left:7px;vertical-align:1px;
 }
+.tag.ambre{color:var(--ambre);border-color:var(--ambre);background:var(--fond-ambre)}
 .compteur{display:flex;align-items:center;gap:0;flex:0 0 auto}
 .compteur button{
   width:38px;height:38px;font-size:1.25rem;line-height:1;cursor:pointer;
@@ -268,10 +272,11 @@ footer a{color:var(--bleu)}
   <section>
     <h2>Votre commande</h2>
     <p class="aide">
-      Le matériel est mis à disposition par MYLAV. Deux articles seulement restent à votre charge,
+      Le matériel est mis à disposition par MYLAV. Deux articles restent à votre charge,
       signalés <span class="tag">À VOTRE CHARGE</span> : le pot d'histologie de 550 ml et le kit
-      de biopsies rénales. Les pots de 60 et 150 ml sont offerts dès lors que l'analyse est
-      réalisée chez MYLAV.
+      de biopsies rénales. Les pots d'histologie 60 et 150 ml, signalés
+      <span class="tag ambre">REMBOURSÉ APRÈS ANALYSE</span>, vous sont facturés à la commande
+      puis crédités dès réception du prélèvement au laboratoire.
     </p>
     <div id="catalogue"></div>
   </section>
@@ -354,8 +359,8 @@ const CATALOGUE = [
     {cle:"Tube aprotinine ACTH",         nom:"Tube aprotinine (ACTH)", prix:0.60}
   ]},
   {famille:"Histologie et cytologie", articles:[
-    {cle:"Pot histologie 60 mL",           nom:"Pot histologie Safe System 60 mL", prix:2.50, meta:"10 mL de formol · déduit si histologie réalisée chez MYLAV"},
-    {cle:"Pot histologie 150 mL",          nom:"Pot histologie Safe System 150 mL", prix:2.50, meta:"60 mL de formol · déduit si histologie réalisée chez MYLAV"},
+    {cle:"Pot histologie 60 mL",           nom:"Pot histologie Safe System 60 mL", prix:2.50, rembourse:true, meta:"10 mL de formol"},
+    {cle:"Pot histologie 150 mL",          nom:"Pot histologie Safe System 150 mL", prix:2.50, rembourse:true, meta:"60 mL de formol"},
     {cle:"Pot histologie 550 mL",          nom:"Pot histologie Safe System 550 mL", prix:9.00, meta:"230 mL de formol", facture:true},
     {cle:"Lames porte-objets boite de 50", nom:"Lames porte-objets, boîte de 50", prix:2.52, meta:"Bord non poli"},
     {cle:"Boite transport 2 lames",        nom:"Boîte de transport pour 2 lames", prix:0.28},
@@ -402,9 +407,11 @@ function construireCatalogue(){
       ligne.innerHTML = `
         ${VIGNETTES[a.cle] ? `<img class="vignette" src="data:image/png;base64,${VIGNETTES[a.cle]}" alt="">` : ''}
         <div class="desc">
-          <span class="nom">${a.nom}${a.facture ? '<span class="tag">À VOTRE CHARGE</span>' : ''}</span>
+          <span class="nom">${a.nom}${a.facture ? '<span class="tag">À VOTRE CHARGE</span>' : a.rembourse ? '<span class="tag ambre">REMBOURSÉ APRÈS ANALYSE</span>' : ''}</span>
           <span class="meta">${a.facture
             ? `<b class="charge">${euro(a.prix)} l'unité</b>`
+            : a.rembourse
+            ? `<b class="rembourse">${euro(a.prix)} l'unité</b> <span class="valeur">crédité dès réception</span>`
             : `<b class="offert">Offert</b> <span class="valeur">valeur ${euro(a.prix)}</span>`
           }${a.meta ? " · " + a.meta : ""}</span>
         </div>
@@ -447,16 +454,19 @@ function majLigne(ligne){
 }
 
 function totaux(){
-  let articles = 0, valeur = 0, facture = 0;
+  let articles = 0, valeur = 0, facture = 0, rembourse = 0;
   ARTICLES.forEach(a => {
     const q = quantites[a.cle] || 0;
     articles += q;
     valeur += q * a.prix;
     if(a.facture) facture += q * a.prix;
+    else if(a.rembourse) rembourse += q * a.prix;
   });
   valeur = Math.round(valeur*100)/100;
   facture = Math.round(facture*100)/100;
-  return {articles, valeur, facture, offert:Math.round((valeur-facture)*100)/100};
+  rembourse = Math.round(rembourse*100)/100;
+  return {articles, valeur, facture, rembourse,
+          offert:Math.round((valeur-facture-rembourse)*100)/100};
 }
 
 function majSynthese(){
@@ -466,7 +476,10 @@ function majSynthese(){
   cible.innerHTML = `${t.articles} article${t.articles>1?"s":""} · ` +
     (t.facture > 0
       ? `<b>${euro(t.facture)}</b> à votre charge`
-      : "pris en charge par MYLAV");
+      : "pris en charge par MYLAV") +
+    (t.rembourse > 0
+      ? ` · <span class="destinataire">dont ${euro(t.rembourse)} avancé, crédité dès réception</span>`
+      : "");
 }
 
 /* ============================================================
@@ -544,7 +557,7 @@ function construirePDF(d){
   const {jsPDF} = window.jspdf;
   const doc = new jsPDF({unit:"mm", format:"a4"});
   const G = 18, D = 192;
-  const BLEU = [20,120,192], FONCE = [14,76,122], ROUGE = [187,59,60], GRIS = [92,107,122];
+  const BLEU = [20,120,192], FONCE = [14,76,122], ROUGE = [187,59,60], GRIS = [92,107,122], AMBRE = [199,122,40];
   let y;
 
   const bandeau = () => {
@@ -629,7 +642,7 @@ function construirePDF(d){
   doc.setFontSize(9.5);
   d.lignes.forEach((l, i) => {
     const nom = doc.splitTextToSize(l.nom, 100);
-    const hauteur = Math.max(7, nom.length * 4.6 + 2.6) + (l.facture ? 3.6 : 0);
+    const hauteur = Math.max(7, nom.length * 4.6 + 2.6) + (l.facture || l.rembourse ? 3.6 : 0);
     if(y + hauteur > 262){
       doc.addPage();
       bandeau();
@@ -647,12 +660,16 @@ function construirePDF(d){
       doc.setFont("helvetica","bold").setFontSize(7).setTextColor(...ROUGE);
       doc.text("À VOTRE CHARGE", G + 3, y + 4.8 + nom.length * 4.6 - 0.6);
       doc.setFontSize(9.5);
+    } else if(l.rembourse){
+      doc.setFont("helvetica","bold").setFontSize(7).setTextColor(...AMBRE);
+      doc.text("REMBOURSÉ APRÈS ANALYSE", G + 3, y + 4.8 + nom.length * 4.6 - 0.6);
+      doc.setFontSize(9.5);
     }
     doc.setFont("helvetica","bold").setTextColor(0);
     doc.text(String(l.quantite), 126, y + 4.8, {align:"center"});
     doc.setFont("helvetica","normal").setTextColor(...GRIS);
     doc.text(euro(l.prix), 162, y + 4.8, {align:"right"});
-    doc.setFont("helvetica","bold").setTextColor(...(l.facture ? ROUGE : [0,0,0]));
+    doc.setFont("helvetica","bold").setTextColor(...(l.facture ? ROUGE : l.rembourse ? AMBRE : [0,0,0]));
     doc.text(euro(l.quantite * l.prix), D - 3, y + 4.8, {align:"right"});
     doc.setTextColor(0);
     y += hauteur;
@@ -665,10 +682,23 @@ function construirePDF(d){
 
   doc.setFont("helvetica","normal").setFontSize(10).setTextColor(...GRIS);
   doc.text(`${d.totaux.articles} article${d.totaux.articles > 1 ? "s" : ""}`, G + 3, y);
-  doc.text("Matériel pris en charge par MYLAV", 152, y, {align:"right"});
+  doc.text("Matériel offert par MYLAV", 152, y, {align:"right"});
   doc.setFont("helvetica","bold").setTextColor(0);
   doc.text(euro(d.totaux.offert), D - 3, y, {align:"right"});
-  y += 4.5;
+  y += 5.5;
+
+  if(d.totaux.rembourse > 0){
+    doc.setFillColor(251,241,228);
+    doc.rect(G, y - 3.4, D - G, 10.6, "F");
+    doc.setDrawColor(...AMBRE).setLineWidth(1.2);
+    doc.line(G, y - 3.4, G, y + 7.2);
+    doc.setFont("helvetica","normal").setFontSize(9).setTextColor(...GRIS);
+    doc.text("Facturé puis remboursé — crédité dès réception au laboratoire", G + 4, y + 0.4);
+    doc.setFont("helvetica","bold").setFontSize(10).setTextColor(...AMBRE);
+    doc.text(euro(d.totaux.rembourse), D - 3, y + 0.4, {align:"right"});
+    doc.setTextColor(0);
+    y += 10;
+  }
 
   const charge = d.totaux.facture;
   doc.setFillColor(...(charge > 0 ? [251,237,237] : [242,247,252]));
@@ -681,7 +711,9 @@ function construirePDF(d){
 
   if(charge === 0){
     doc.setFont("helvetica","normal").setFontSize(9.5).setTextColor(...GRIS);
-    doc.text("Cette commande est intégralement prise en charge par MYLAV.", G + 3, y);
+    doc.text(d.totaux.rembourse > 0
+      ? "Aucun montant ne reste à votre charge après réception du prélèvement au laboratoire."
+      : "Cette commande est intégralement prise en charge par MYLAV.", G + 3, y);
     doc.setTextColor(0);
     y += 6;
   }
@@ -701,10 +733,10 @@ function construirePDF(d){
   y += 8;
   doc.setFont("helvetica","italic").setFontSize(8.5).setTextColor(...GRIS);
   doc.text(doc.splitTextToSize(
-    "Le matériel de prélèvement et d'expédition est mis à disposition par MYLAV. Seuls le pot " +
-    "d'histologie de 550 ml (9,00 €) et le kit de biopsies rénales (60,00 €) sont facturés. " +
-    "Les pots de 60 et 150 ml sont offerts dès lors que l'analyse est réalisée chez MYLAV. " +
-    "Les valeurs indiquées sont celles du matériel, elles ne constituent pas un montant dû.",
+    "Le matériel de prélèvement et d'expédition est mis à disposition par MYLAV. Le pot " +
+    "d'histologie de 550 ml (9,00 €) et le kit de biopsies rénales (60,00 €) restent à votre charge. " +
+    "Les pots d'histologie 60 et 150 ml vous sont facturés à la commande, puis remboursés " +
+    "(crédités dès réception du prélèvement au laboratoire). Les valeurs indiquées sont celles du matériel.",
     D - G), G, y);
 
   const pages = doc.getNumberOfPages();
@@ -764,7 +796,7 @@ async function genererCommande(){
     notes: document.getElementById("notes").value.trim(),
     lignes: ARTICLES.filter(a => quantites[a.cle] > 0)
                     .map(a => ({cle:a.cle, nom:a.nom, quantite:quantites[a.cle],
-                                prix:a.prix, facture:!!a.facture})),
+                                prix:a.prix, facture:!!a.facture, rembourse:!!a.rembourse})),
     totaux: t
   };
 
